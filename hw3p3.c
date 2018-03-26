@@ -5,30 +5,44 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
+#include <windows.h>
 #include <sys/semaphore.h>
-#define NUM 10
-int maxTellers = NUM;
-int workingTellers = 0;
-int freeTellers = 0;
-int customersWaiting = 0;
-int time = 0;
-int tellerIDs[NUM];
-pthread_t tellers[NUM];
-sem_t semaphores[NUM];
 
-void* tellerThread(void* arg){
-	//performs simple bubble sort based on rank of process
-	int * tellerID = (int*) arg;
+sem_t semaphore;
+int t = 0;
 
-    return NULL;
+
+void tellerCheckIn(){
+	sem_post(&semaphore);
 }
 
+void tellerCheckOut(){
+	sem_wait(&semaphore);
+}
+
+void DoBanking(){
+	sem_wait(&semaphore);
+	sleep(3000);
+	FinishBanking();
+}
+
+void FinishBanking(){
+	sem_post(&semaphore);
+}
 
 int main(int argc, char *argv[]){
 	printf("Hello, and welcome to The Bank of Operating Systems \n");
-	for(int i=0; i<NUM; i++) sem_init(semaphores + i, 0, 0);
-	for(int i=0; i<NUM; i++) tellerIDs[i] = i;
-	for (int i=0; i<NUM; i++) pthread_create(tellers + i, NULL, tellerThread, tellerIDs + i);
+	sem_init(&semaphore, 0, 0);
+	for(int i = 0; i<5; i++) tellerCheckIn();
+	srand(time(NULL));
+	while(t<100){
+		int r = rand()%10;
+		if(r == 2) tellerCheckOut();
+		else if(r == 4) tellerCheckIn();
+		else if(r >7 ) DoBanking();
+	}
+
+
 
 
 }
