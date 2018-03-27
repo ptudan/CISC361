@@ -15,6 +15,10 @@ int states[N];
 pthread_cond_t conds[N];
 pthread_mutex_t mutex;
 
+void think(int p);
+void pickup_forks(int p);
+void return_forks(int p);
+
 
 
 //228 has code
@@ -50,7 +54,7 @@ void pickup_forks(int p){
 	states[p] = HUNGRY;
 	pthread_mutex_lock(&mutex);
 	while(!(states[left]==THINKING)&&(states[right])==THINKING){
-		pthread_cond_wait(&mutex, &conds[p]);
+		pthread_cond_wait(&conds[p], &mutex);
 	}
 	return_forks(p);
 	pthread_mutex_unlock(&mutex);
@@ -78,12 +82,15 @@ void return_forks(int p){
 
 
 int main(int argc, char *argv[]){
+	printf("start\n");
 	srand(time(NULL));
 	pthread_mutex_init(&mutex, NULL);
-	for(int i = 0; i<N; i++) pthread_cond_init(&conds+i, NULL);
+	for(int i = 0; i<N; i++) pthread_cond_init(conds+i, NULL);
 	int pids[N];
 	pthread_t phis[N];
 	for(int i = 0; i<N; i++)pids[i] = i;
 
 	for(int i = 0; i<N; i++)pthread_create(phis + i, NULL, philoThread, pids + i);
+    for(int i = 0; i<N; i++) pthread_join(phis[i], NULL);
+
 }
